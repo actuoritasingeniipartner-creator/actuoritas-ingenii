@@ -65,7 +65,7 @@
           <span>📷</span> Instagram
         </a>
         <a href="https://www.facebook.com/actuatoritas.ingenii.partner" target="_blank" class="social-btn facebook">
-          <span>👍</span> Facebook
+          <span></span> Facebook
         </a>
       </div>
     </div>
@@ -86,8 +86,8 @@
       Para empezar a diseñar imperios, construir una empresa desde cero es un acto de valentía.<br>
       Pero llevarla a su máximo potencial, sin perder el control ni la esencia... eso requiere algo más que trabajo duro.<br><br>
       En la antigua Roma, el éxito y el dominio no se dejaban al azar. Se sostenían sobre principios inquebrantables. Hoy, esos principios inspiran nuestro nombre y la razón de nuestra existencia:<br><br>
-      ️ <strong>Actuoritas (Prestigio).</strong> La autoridad que no se impone, sino que se gana por resultados, visión y solidez.<br>
-      🧠 <strong>Ingenii (Mente).</strong> La agudeza intelectual, la sabiduría para ver las oportunidades donde otros solo ven obstáculos.<br>
+      🏛️ <strong>Actuoritas (Prestigio).</strong> La autoridad que no se impone, sino que se gana por resultados, visión y solidez.<br>
+       <strong>Ingenii (Mente).</strong> La agudeza intelectual, la sabiduría para ver las oportunidades donde otros solo ven obstáculos.<br>
       🤝 <strong>Partner (Aliado).</strong> Porque la historia nos ha enseñado que ningún gran imperio se construyó en soledad.
     </p>
   </section>
@@ -115,9 +115,8 @@
     const form = document.getElementById('chat-form');
     const input = document.getElementById('user-input');
 
-    // PEGA TU API KEY DE GEMINI AQUI ABAJO (entre las comillas simples)
-    // Ejemplo: const GEMINI_API_KEY = 'AIzaSy...';
-    const GEMINI_API_KEY = 'AQ.Ab8RN6LVJeqi92s683P5C-oesRuVLSDqKKLhob0uqTi2ApIKbA';
+    // TU API KEY DE GEMINI (empieza con AQ.)
+    const GEMINI_API_KEY = 'AQ.Ab8RN6JDcj1r90evR0_PD1Z7tYSWj8qxnt01YLz1RHmmxHNDFg';
 
     const systemPrompt = "Eres un Growth Partner experto de Actuoritas Ingenii. Ayudas a prospectos a entender como la automatizacion e IA pueden hacer crecer su negocio. Responde SIEMPRE en formato JSON puro, sin markdown. Usa este formato exacto: {\"reply\":\"Tu respuesta empatica de 3-4 frases\",\"crm_data\":{\"prospect_name\":\"Nombre o Desconocido\",\"business_type\":\"Tipo de negocio\",\"emotional_friction\":\"Miedo detectado\",\"objection\":\"Objecion principal\",\"persuasion_lever_used\":\"Principio usado\",\"next_step\":\"Siguiente accion\",\"hoolt_trigger_tag\":\"etiqueta\",\"crm_status\":\"nuevo_contacto\",\"lead_score\":85,\"urgency\":\"media\",\"follow_up_date\":\"2026-09-10\"}}. Se empatico, profesional, enfocado en ROI. NO inventes datos.";
 
@@ -158,7 +157,8 @@
       conversationHistory.push({ role: "user", parts: [{ text: userText }] });
 
       try {
-       const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
+        // CAMBIADO A gemini-1.5-flash que es más estable
+        const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY;
         
         const response = await fetch(url, {
           method: "POST",
