@@ -59,14 +59,13 @@
       <button onclick="document.getElementById('chat').scrollIntoView({behavior: 'smooth'})">Hablar con el agente</button>
       
       <div class="social-buttons">
-        <!-- Emojis restaurados -->
         <a href="https://wa.me/522219294171?text=Hola%20Actuoritas%20Ingenii" target="_blank" class="social-btn whatsapp">
           <span>📱</span> WhatsApp
         </a>
         <a href="https://www.instagram.com/act.ing.par.001/" target="_blank" class="social-btn instagram">
           <span>📷</span> Instagram
         </a>
-        <a href="https://www.facebook.com/profile.php?id=61593227297679" target="_blank" class="social-btn facebook">
+        <a href="https://www.facebook.com/actuatoritas.ingenii.partner" target="_blank" class="social-btn facebook">
           <span>👍</span> Facebook
         </a>
       </div>
@@ -112,10 +111,40 @@
     <p>© 2026 Actuoritas Ingenii - Growth Partner</p>
   </footer>
 
+  <!-- AQUÍ ESTÁ LA MAGIA: SCRIPT CON IA DE GROQ -->
   <script>
     const chatBox = document.getElementById('chat-box');
     const form = document.getElementById('chat-form');
     const input = document.getElementById('user-input');
+
+    // ⚠️ IMPORTANTE: REEMPLAZA ESTO CON TU API KEY REAL DE GROQ
+    const GROQ_API_KEY = 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; 
+
+    const systemPrompt = `Eres un Growth Partner experto de Actuoritas Ingenii. Tu objetivo es ayudar a prospectos a entender cómo la automatización e IA pueden hacer crecer su negocio.
+    REGLAS:
+    1. Responde SIEMPRE en formato JSON puro (sin markdown, sin comillas extras al inicio o final).
+    2. Usa este formato exacto:
+    {
+      "reply": "Tu respuesta amable, empática y persuasiva de máximo 3-4 frases, abordando directamente la preocupación del usuario.",
+      "crm_data": {
+        "prospect_name": "Nombre del prospecto o 'Desconocido'",
+        "business_type": "Tipo de negocio si lo menciona",
+        "emotional_friction": "Miedo, duda o preocupación detectada",
+        "objection": "Objeción principal si la hay",
+        "persuasion_lever_used": "Principio de persuasión usado (prueba social, reciprocidad, autoridad, escasez, etc.)",
+        "next_step": "Siguiente acción recomendada",
+        "hoolt_trigger_tag": "Etiqueta para Hoolt (ej: objection_roi_costo, nuevo_contacto, lead_calificado)",
+        "crm_status": "nuevo_contacto | lead_calificado | en_negociacion | cerrado",
+        "lead_score": 85,
+        "urgency": "baja | media | alta",
+        "follow_up_date": "YYYY-MM-DD"
+      }
+    }
+    3. Sé empático, profesional y enfocado en ROI. Usa ejemplos concretos.`;
+
+    let conversationHistory = [
+      { role: 'system', content: systemPrompt }
+    ];
 
     function addMessage(text, sender) {
       const row = document.createElement('div');
@@ -132,7 +161,7 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
       e.preventDefault();
       const userText = input.value.trim();
       if (!userText) return;
@@ -146,26 +175,51 @@
       chatBox.appendChild(loadingRow);
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      setTimeout(function() {
-        chatBox.removeChild(loadingRow);
-        let reply = "";
-        const texto = userText.toLowerCase();
+      conversationHistory.push({ role: 'user', content: userText });
 
-        if (texto.includes("hola") || texto.includes("buenas") || texto.includes("hey")) {
-          reply = "¡Hola! 👋 Soy el agente de Actuoritas Ingenii. ¿En qué puedo ayudarte?";
-        } else if (texto.includes("precio") || texto.includes("cuesta") || texto.includes("costo")) {
-          reply = "💰 Tenemos 3 planes: Básico (0€), Profesional (49€/mes) y Enterprise (149€/mes). ¿Cuál te interesa?";
-        } else if (texto.includes("servicio") || texto.includes("hacen") || texto.includes("ofrecen")) {
-          reply = "🚀 Ofrecemos: Landing Pages con IA, Agentes Inteligentes 24/7, Automatización de procesos y Estrategias de crecimiento.";
-        } else if (texto.includes("contacto") || texto.includes("email") || texto.includes("whatsapp")) {
-          reply = "📧 Escríbenos por WhatsApp (botón arriba) o a contacto@actuoritas.com";
-        } else if (texto.includes("gracias")) {
-          reply = "¡De nada! 😊 Estamos aquí para ayudarte.";
-        } else {
-          reply = "🤔 Entiendo. Para darte la mejor respuesta, haz clic en el botón de WhatsApp arriba y un Growth Partner te contactará.";
+      try {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + GROQ_API_KEY
+          },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: conversationHistory,
+            temperature: 0.3,
+            response_format: { type: 'json_object' }
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error('Error ' + response.status + ': ' + (errorData.error?.message || 'Desconocido'));
         }
-        addMessage(reply, 'bot');
-      }, 1000);
+
+        const data = await response.json();
+        const aiText = data.choices[0].message.content;
+        
+        chatBox.removeChild(loadingRow);
+
+        // Limpiar respuesta y parsear JSON
+        const cleanJson = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsedData = JSON.parse(cleanJson);
+
+        // Mostrar respuesta al usuario
+        addMessage(parsedData.reply, 'bot');
+        
+        // Guardar en historial
+        conversationHistory.push({ role: 'assistant', content: aiText });
+        
+        // Mostrar datos de CRM en consola (para Hoolt)
+        console.log('📦 DATOS PARA HOOLT:', parsedData.crm_data);
+
+      } catch (error) {
+        if (loadingRow.parentNode) chatBox.removeChild(loadingRow);
+        addMessage('Error de conexión con la IA. Verifica tu API Key. Detalle: ' + error.message, 'bot');
+        console.error('ERROR DETALLADO:', error);
+      }
     });
   </script>
 
